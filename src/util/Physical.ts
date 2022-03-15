@@ -5,11 +5,13 @@ import { EventEmitter } from "events";
 class PhysicalSprite extends EventEmitter {
     body: Matter.Body;
     sprite: Sprite;
+    dead: boolean;
 
     constructor(_body: Matter.Body, _sprite: Sprite, engine: Matter.Engine) {
         super();
         this.body = _body;
         this.sprite = _sprite;
+        this.dead = false;
 
         Matter.Events.on(engine, "collisionEnd", (e: Matter.IEventCollision<Matter.Engine>) => {
             const pairs = e.pairs;
@@ -41,8 +43,16 @@ class PhysicalSprite extends EventEmitter {
 
     destory(engine: Matter.Engine) {
         //console.log("destory");
-        Matter.World.remove(engine.world, this.body);
-        this.sprite.parent.removeChild(this.sprite);
+        this.dead = true;
+        Matter.Composite.remove(engine.world, this.body);
+        //this.sprite.destroy();
+        //this.sprite.destroy(false);
+        if (this.sprite.parent != null) {
+            console.log("parent is not null");
+            this.sprite.parent.removeChild(this.sprite);
+        } else {
+            console.log("parent is null");
+        }
     }
 
     applyCenterForce(x = 0, y = 0) {
@@ -68,7 +78,7 @@ class PhysicalWorld {
     }
 
     clear(): void {
-        Matter.World.clear(this.engine.world, false);
+        Matter.Composite.clear(this.engine.world, false);
     }
 
     getPWorld(): Matter.World {

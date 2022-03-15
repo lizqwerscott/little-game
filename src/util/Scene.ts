@@ -6,20 +6,16 @@ import Game from "./Game";
 class Scene {
     name: string;
     sceneObject: Array<PhysicalSprite>;
-    container: Container;
+    container: Container | null;
     game: Game;
 
     constructor(_name: string, _game: Game) {
         this.name = _name;
         this.sceneObject = new Array<PhysicalSprite>();
-        this.container = new Container();
+        this.container = null;
         //this.container.x = _game.gameWidth / 2;
         //this.container.y = _game.gameHeight / 2;
-        _game.app.stage.addChild(this.container);
         this.game = _game;
-
-        this.game.app.ticker.add(this.update, this); //this.container.renderable = false;
-        this.game.app.ticker.add(this.updatePhysicalScene, this);
     }
 
     create(): void {
@@ -28,10 +24,18 @@ class Scene {
 
     updatePhysicalScene() {
         this.sceneObject.forEach((object: PhysicalSprite) => {
-            object.sprite.position.x = object.body.position.x;
-            object.sprite.position.y = object.body.position.y;
-            object.sprite.rotation = object.body.angle;
+            if (!object.dead) {
+                object.sprite.position.set(object.body.position.x, object.body.position.y);
+                //object.sprite.position.x = object.body.position.x;
+                //object.sprite.position.y = object.body.position.y;
+                object.sprite.rotation = object.body.angle;
+            }
         });
+    }
+
+    removePhysicalSprite(sprite: PhysicalSprite) {
+        this.sceneObject.filter((item) => item !== sprite);
+        sprite.destory(this.game.world.engine);
     }
 
     update(delta: number): void {
@@ -39,6 +43,10 @@ class Scene {
     }
 
     start(): void {
+        this.container = new Container();
+        this.game.app.stage.addChild(this.container);
+        this.game.app.ticker.add(this.update, this); //this.container.renderable = false;
+        this.game.app.ticker.add(this.updatePhysicalScene, this);
         this.game.world.clear();
         this.create();
     }
@@ -48,9 +56,11 @@ class Scene {
         this.game.app.ticker.remove(this.updatePhysicalScene, this);
         this.game.app.ticker.remove(this.update, this);
         //this.game.app.stage.removeChild(this.container);
-        this.container.children.forEach((item) => {
-            //item.destroy(true);
-            this.container.removeChild(item);
+        this.sceneObject = new Array<PhysicalSprite>();
+        this.container?.destroy({
+            children: true,
+            texture: false,
+            baseTexture: false,
         });
         //this.container.renderable = false;
         this.game.world.clear();
@@ -82,11 +92,15 @@ class Scene {
         const image = Texture.from(this.imageKeyValue(imageKey));
 
         const imageBody = Matter.Bodies.rectangle(x, y, image.width, image.height, bodyConfig);
-        Matter.World.add(this.game.world.engine.world, imageBody);
+        Matter.Composite.add(this.game.world.engine.world, imageBody);
 
         const imageSprite = new Sprite(image);
         imageSprite.anchor.set(0.5, 0.5);
-        this.container.addChild(imageSprite);
+        if (this.container != null) {
+            this.container?.addChild(imageSprite);
+        } else {
+            console.log("container is null");
+        }
 
         const physicsSprite = new PhysicalSprite(imageBody, imageSprite, this.game.world.engine);
 
@@ -109,10 +123,14 @@ class Scene {
         rectangle.width = width;
         rectangle.height = height;
         rectangle.tint = color;
-        this.container.addChild(rectangle);
+        if (this.container != null) {
+            this.container?.addChild(rectangle);
+        } else {
+            console.log("container is null");
+        }
 
         const body = Matter.Bodies.rectangle(x, y, width, height, bodyConfig);
-        Matter.World.add(this.game.world.engine.world, body);
+        Matter.Composite.add(this.game.world.engine.world, body);
 
         const physicsRect = new PhysicalSprite(body, rectangle, this.game.world.engine);
 
@@ -129,7 +147,7 @@ class Scene {
         imageSprite.x = x;
         imageSprite.y = y;
 
-        this.container.addChild(imageSprite);
+        this.container?.addChild(imageSprite);
 
         return imageSprite;
     }
@@ -147,17 +165,27 @@ class Scene {
         baseText.x = x;
         baseText.y = y;
 
-        this.container.addChild(baseText);
+        this.container?.addChild(baseText);
         return baseText;
     }
 }
 
 class SceneManager {
+    private static _instance: SceneManager;
     scenes: Map<string, Scene>;
     nowScene: string;
-    constructor(startScene: string) {
+    constructor() {
         this.scenes = new Map<string, Scene>();
-        this.nowScene = startScene;
+        this.nowScene = "";
+    }
+
+    public static getInstance() {
+        if (!this._instance) {
+            this._instance = new SceneManager();
+        } else {
+            console.log("scene manager has created");
+        }
+        return this._instance;
     }
 
     getNowScene(): Scene | undefined {

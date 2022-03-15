@@ -9,13 +9,9 @@ class Game {
     gameWidth: number;
     gameHeight: number;
     gameRatio: number;
-    runner: Matter.Runner;
-
     loaderList: Map<string, string>;
 
-    sceneManager: SceneManager;
-
-    constructor(width: number, height: number, scene: string) {
+    constructor(width: number, height: number, scenes: Array<string>) {
         this.world = new PhysicalWorld(width, height);
         this.app = new Application({
             width: width,
@@ -24,14 +20,12 @@ class Game {
         this.gameWidth = width;
         this.gameHeight = height;
         this.gameRatio = width / height;
-        this.runner = Matter.Runner.create();
-
-        this.sceneManager = new SceneManager(scene);
-
+        //this.runner = Matter.Runner.create();
+        SceneManager.getInstance().nowScene = scenes[0];
         this.loaderList = new Map<string, string>();
     }
 
-    resizeCanvas(): void {
+    private resizeCanvas(): void {
         const resize = () => {
             const canvas = document.querySelector("canvas");
             const windowWidth = window.innerWidth;
@@ -42,8 +36,7 @@ class Game {
                 if (windowRatio < this.gameRatio) {
                     canvas.style.width = windowWidth + "px";
                     canvas.style.height = windowWidth / this.gameRatio + "px";
-                } else {
-                    canvas.style.width = windowHeight * this.gameRatio + "px";
+                } else { canvas.style.width = windowHeight * this.gameRatio + "px";
                     canvas.style.height = windowHeight + "px";
                 }
             }
@@ -61,8 +54,9 @@ class Game {
             console.log("load finish");
             this.resizeCanvas();
             document.body.appendChild(this.app.view);
-            this.sceneManager.runNowScene();
-            Matter.Runner.run(this.runner, this.world.engine);
+            this.resizeCanvas();
+            SceneManager.getInstance().runNowScene();
+            Matter.Runner.run(this.world.engine);
         };
     }
 
