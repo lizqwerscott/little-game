@@ -36,7 +36,8 @@ class Game {
                 if (windowRatio < this.gameRatio) {
                     canvas.style.width = windowWidth + "px";
                     canvas.style.height = windowWidth / this.gameRatio + "px";
-                } else { canvas.style.width = windowHeight * this.gameRatio + "px";
+                } else {
+                    canvas.style.width = windowHeight * this.gameRatio + "px";
                     canvas.style.height = windowHeight + "px";
                 }
             }
