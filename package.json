@@ -21,7 +21,7 @@
         "lint-check": "npx eslint ./src/**/*.ts",
         "code-style-check": "npm run lint-check && npm run prettier:check",
         "prepare": "husky install",
-        "server": "http-server ./dist -p 8088"
+        "server": "http-server ./dist -p 8077"
     },
     "author": "jkanchelov",
     "license": "MIT",
