@@ -12,7 +12,7 @@ function isPC() {
     return flag;
 }
 
-function randomNumber(count = 1, min = 1, max = 10, scope = 2) {
+function randomNumber(count = 1, min = 1, max = 10, scope = 2, cantUse: Array<number>) {
     const numArray: number[] = new Array<number>();
     let temp = 0;
     let rightp = true;
@@ -35,7 +35,11 @@ function randomNumber(count = 1, min = 1, max = 10, scope = 2) {
                             break;
                         }
                     }
-                    rightp = iscan;
+                    if (!iscan) {
+                        rightp = cantUse.includes(temp);
+                    } else {
+                        rightp = iscan;
+                    }
                 }
             }
         } while (rightp);
@@ -43,4 +47,9 @@ function randomNumber(count = 1, min = 1, max = 10, scope = 2) {
     }
     return numArray;
 }
-export { isPC, randomNumber };
+
+function probably(max: number): boolean {
+    return Math.floor(Math.random() * max + 1) == max;
+}
+
+export { isPC, randomNumber, probably };

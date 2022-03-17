@@ -20,6 +20,7 @@ class MyGame extends Game {
         this.loaderAdd("sky", "../assets/sky.png");
         this.loaderAdd("dude", "../assets/dude/dudu.json");
         this.loaderAdd("star", "../assets/star.png");
+        this.loaderAdd("woodGround", "../assets/woodGroundN.png");
 
         //UI
         this.loaderAdd("start", "../assets/start.png");

@@ -1,6 +1,7 @@
 import { Scene, SceneManager } from "../util/Scene";
 import Game from "../util/Game";
 import { TextStyle } from "pixi.js";
+import { randomNumber } from "../util/utilsFun";
 class StartScene extends Scene {
     constructor(game: Game) {
         super("StartScene", game);

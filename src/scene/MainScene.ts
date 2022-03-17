@@ -4,7 +4,7 @@ import Matter from "matter-js";
 import { PhysicalSprite } from "../util/Physical";
 import { Scene, SceneManager } from "../util/Scene";
 import Game from "../util/Game";
-import { randomNumber, isPC } from "../util/utilsFun";
+import { randomNumber, isPC, probably } from "../util/utilsFun";
 import KeyboardManager from "../util/keyboard";
 import GameConfig from "../GameConfig";
 
@@ -94,11 +94,23 @@ class DudePlayer {
         };
 
         this.dudeDown.on("collisionEnd", (bodyB: Matter.Body) => {
-            const stonep = scene.grounds.has(bodyB.id) && this.dudeDown.body.position.y < bodyB.position.y;
-            if (stonep) {
-                Matter.Body.setVelocity(this.dudeDown.body, { x: 0, y: 0 });
-                this.dudeRun.push(-6);
-                console.log("conectIsGround");
+            if (this.dudeDown.body.position.y < bodyB.position.y) {
+                const stonep = scene.grounds.has(bodyB.id);
+                const woodp = scene.woodGrounds.has(bodyB.id);
+                if (stonep) {
+                    Matter.Body.setVelocity(this.dudeDown.body, { x: 0, y: 0 });
+                    this.dudeRun.push(-4.7);
+                    //console.log("conectIsGround");
+                }
+                if (woodp) {
+                    Matter.Body.setVelocity(this.dudeDown.body, { x: 0, y: 0 });
+                    this.dudeRun.push(-4.7);
+                    const woodGround = scene.woodGrounds.get(bodyB.id);
+                    if (woodGround != undefined) {
+                        scene.woodGrounds.delete(bodyB.id);
+                        scene.removePhysicalSprite(woodGround);
+                    }
+                }
             }
         });
     }
@@ -170,8 +182,10 @@ class DudePlayer {
 
 class MainScene extends Scene {
     grounds: Map<number, PhysicalSprite>;
+    woodGrounds: Map<number, PhysicalSprite>;
     generateLastSprite: PhysicalSprite | null;
     groundDownSpeed: number;
+    lastGeneratePos: Array<number>;
 
     dude: DudePlayer | null;
     wallBottomId: number;
@@ -183,6 +197,7 @@ class MainScene extends Scene {
     constructor(game: Game) {
         super("MainScene", game);
         this.grounds = new Map<number, PhysicalSprite>();
+        this.woodGrounds = new Map<number, PhysicalSprite>();
         this.generateLastSprite = null;
         this.dude = null;
         this.wallBottomId = -1;
@@ -190,6 +205,7 @@ class MainScene extends Scene {
         this.showScore = null;
         this.showRet = null;
         this.lightings = new Array<Sprite>();
+        this.lastGeneratePos = new Array<number>();
     }
 
     autoGenerateGround(y: number, count = 0) {
@@ -198,19 +214,29 @@ class MainScene extends Scene {
             count = Math.floor(Math.random() * 2 + 1);
         }
 
-        if (Math.floor(Math.random() * 100 + 25) == 39) {
+        if (probably(1000)) {
             count == 0;
         }
 
         if (count != 0) {
-            const numArray = randomNumber(count, 1, lineNum, 3);
+            const numArray = randomNumber(count, 1, lineNum, 2, this.lastGeneratePos);
+            this.lastGeneratePos = [];
             for (let i = 0; i < count; i++) {
-                const x = numArray[i] * 90 - 45 + Math.random() * 22 - 22;
-                const ground = this.addPhysicalSprite("ground", x, y, {
-                    isStatic: true,
-                });
-                this.grounds.set(ground.body.id, ground);
+                const x = numArray[i] * 90 - 45 + Math.random() * 11 - 11;
+                let ground: PhysicalSprite;
+                if (probably(5)) {
+                    ground = this.addPhysicalSprite("woodGround", x, y, {
+                        isStatic: true,
+                    });
+                    this.woodGrounds.set(ground.body.id, ground);
+                } else {
+                    ground = this.addPhysicalSprite("ground", x, y, {
+                        isStatic: true,
+                    });
+                    this.grounds.set(ground.body.id, ground);
+                }
                 this.generateLastSprite = ground;
+                this.lastGeneratePos.push(numArray[i]);
             }
         }
     }
@@ -307,6 +333,17 @@ class MainScene extends Scene {
             if (nextY > this.game.gameHeight + 10) {
                 console.log("destory: " + ground.body.id);
                 this.grounds.delete(ground.body.id);
+                //ground.destory(this.game.world.engine);
+                this.removePhysicalSprite(ground);
+            }
+            Matter.Body.setPosition(ground.body, nextPos);
+        });
+        this.woodGrounds.forEach((ground: PhysicalSprite) => {
+            const nextY = ground.getY() + this.groundDownSpeed;
+            const nextPos = { x: ground.getX(), y: nextY };
+            if (nextY > this.game.gameHeight + 10) {
+                console.log("destory: " + ground.body.id);
+                this.woodGrounds.delete(ground.body.id);
                 //ground.destory(this.game.world.engine);
                 this.removePhysicalSprite(ground);
             }
