@@ -54,7 +54,12 @@ class Game {
             await this.preloadAssets();
             console.log("load finish");
             this.resizeCanvas();
-            document.body.appendChild(this.app.view);
+            const main = document.getElementById("main");
+            if (main != null) {
+                main.appendChild(this.app.view);
+            } else {
+                alert("请刷新页面");
+            }
             this.resizeCanvas();
             SceneManager.getInstance().runNowScene();
             Matter.Runner.run(this.world.engine);

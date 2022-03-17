@@ -6,6 +6,8 @@ import StartScene from "./scene/StartScene";
 import MainScene from "./scene/MainScene";
 import FinishScene from "./scene/FinishScene";
 
+import "./style.css";
+
 const scenes = ["StartScene", "MainScene", "FinishScene"];
 
 class MyGame extends Game {
