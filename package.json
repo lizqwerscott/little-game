@@ -30,7 +30,7 @@
         "@types/matter-js": "^0.17.7",
         "core-js": "^3.20.3",
         "matter-js": "^0.18.0",
-        "pixi-spine": "^3.0.13",
+        "pixi-spine": "^3.0.16",
         "pixi.js": "^6.2.2",
         "regenerator-runtime": "^0.13.9"
     },
