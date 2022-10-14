@@ -32,7 +32,7 @@
         "matter-js": "^0.18.0",
         "pixi-spine": "^3.0.13",
         "pixi.js": "^6.2.2",
-        "regenerator-runtime": "^0.13.9"
+        "regenerator-runtime": "^0.13.10"
     },
     "devDependencies": {
         "@swc/core": "^1.2.135",
